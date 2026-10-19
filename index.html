@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lightning Maze — Public Beta</title>
+<meta name="theme-color" content="#070b16">
+<style>
+:root{color-scheme:dark;--bg:#070b16;--panel:#101a2c;--cyan:#5ef5df;--pink:#ff5bbd;--purple:#ad70ff;--gold:#ffd166;--text:#eaf5ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#142b42 0,#070b16 65%);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text);min-height:100vh;display:grid;place-items:center;padding:18px}
+body.redzone{background:radial-gradient(ellipse at 50% 0%,#5b1829 0,#180711 68%)}body.redzone canvas{border-color:#87364b;box-shadow:0 20px 70px #0009,0 0 35px #9e203b33}body.redzone h1{color:#ff7186}
+body.neonzone{background:radial-gradient(ellipse at 50% 0%,#153b58 0,#06131e 68%)}body.neonzone canvas{border-color:#2b9ca9;box-shadow:0 20px 70px #0009,0 0 35px #22d3ee33}body.neonzone h1{color:#55e7ff}
+body.voidzone{background:radial-gradient(ellipse at 50% 0%,#42215e 0,#10091c 68%)}body.voidzone canvas{border-color:#8c4cc0;box-shadow:0 20px 70px #0009,0 0 35px #bd65ff33}body.voidzone h1{color:#d29aff}
+.wrap{width:min(100%,1000px)}header{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:0 0 12px;flex-wrap:wrap}.header-actions{display:flex;align-items:center;gap:8px}.confetti-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:100}.confetti-piece{position:absolute;top:-18px;width:8px;height:14px;animation:confetti-fall var(--fall,3s) linear forwards}@keyframes confetti-fall{to{top:110vh;transform:translateX(var(--drift,20px)) rotate(900deg)}}h1{font-size:clamp(22px,4vw,36px);letter-spacing:.12em;margin:0;color:var(--cyan);text-shadow:0 0 20px #5ef5df55}small,.muted{color:#9db4ce}.tag{border:1px solid #35516a;padding:6px 9px;border-radius:99px;font-size:11px;color:#b9d3e8}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/10;border:1px solid #29445b;border-radius:12px;background:#080e1b;box-shadow:0 20px 70px #0009;image-rendering:pixelated;outline:none}.overlay{position:relative}.notice{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;background:#06101a99}.notice .card{background:#07101df5;border:1px solid #4c718b;border-radius:12px;padding:22px;max-width:480px;box-shadow:0 0 45px #0009}.notice h2{color:var(--pink);margin:0 0 10px;letter-spacing:.08em;font-size:19px}.notice p{font-size:13px;line-height:1.65;color:#d2e5f4}.hidden{display:none!important}.bar{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:10px}.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:12px}.stats b{color:var(--gold)}button{font:inherit;background:#11283a;color:var(--cyan);border:1px solid #3a7b87;border-radius:8px;padding:10px 14px;cursor:pointer}button:hover{background:#193c4c}button:focus-visible{outline:2px solid white}.help{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:12px}.help div,.musicbox{background:#0d1625;border:1px solid #1c3045;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.6}.key{color:var(--gold);border:1px solid #685b39;border-radius:4px;padding:1px 5px}.progress{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap}.pip{width:22px;height:6px;border-radius:4px;background:#23374a}.pip.done{background:var(--cyan)}.pip.current{background:var(--pink);box-shadow:0 0 8px var(--pink)}.musicbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.musicbox button{padding:7px 10px}.musicbox .muted{font-size:11px}
+.mobile-controls{display:none;align-items:center;justify-content:space-between;gap:18px;max-width:420px;margin:14px auto 0;padding:0 4px;touch-action:none;user-select:none;-webkit-user-select:none}.joystick{position:relative;flex:0 0 154px;width:154px;height:154px;border:2px solid #3a7b87;border-radius:50%;background:radial-gradient(circle at 35% 30%,#17374b,#091522 75%);box-shadow:inset 0 0 18px #0008,0 0 18px #5ef5df16;touch-action:none;user-select:none}.joystick:before,.joystick:after{content:"";position:absolute;background:#3a7b8744;pointer-events:none}.joystick:before{width:1px;top:12px;bottom:12px;left:50%}.joystick:after{height:1px;left:12px;right:12px;top:50%}.joystick-knob{position:absolute;left:50%;top:50%;width:58px;height:58px;transform:translate(-50%,-50%);border:2px solid #5ef5df;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2c6272,#10283b 75%);box-shadow:0 0 16px #5ef5df44;pointer-events:none}.mobile-actions{display:flex;flex-direction:column;gap:8px;flex:1;max-width:180px}.mobile-controls button{min-height:42px;font-size:12px;padding:8px;background:#10283b;touch-action:manipulation;user-select:none;-webkit-user-select:none}.mobile-controls .action{min-height:42px}@media (pointer:coarse),(max-width:700px){body{display:block;padding:8px 8px 18px;min-height:100dvh}.wrap{width:100%;max-width:640px;margin:0 auto}header{align-items:center;gap:8px;margin-bottom:8px}h1{font-size:clamp(19px,5.4vw,29px);letter-spacing:.07em}header small{font-size:9px;display:block;margin-top:3px}.header-actions{gap:5px}.tag{font-size:9px;padding:5px 7px}.overlay{width:100%}canvas{width:100%;height:auto;aspect-ratio:16/10;border-radius:8px;touch-action:manipulation}.mobile-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:none;margin:10px 0;padding:10px;background:#091321;border:1px solid #233e54;border-radius:12px}.joystick{flex:0 0 clamp(110px,34vw,145px);width:clamp(110px,34vw,145px);height:clamp(110px,34vw,145px)}.joystick-knob{width:42px;height:42px}.mobile-actions{display:flex;flex-direction:column;justify-content:center;gap:7px;flex:1;max-width:190px;min-width:0}.mobile-controls button{min-height:46px;font-size:11px;line-height:1.2;padding:8px 6px;touch-action:manipulation}.bar{margin-top:8px;gap:8px;align-items:stretch}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:100%;font-size:10px}.stats span{padding:6px 7px;background:#0d1625;border:1px solid #1c3045;border-radius:6px;min-width:0}.bar>div:last-child{width:100%}.bar>div:last-child button{flex:1;font-size:10px;padding:9px 5px}.progress{margin-top:8px}.pip{flex:1;min-width:3px}.musicbox{margin-top:8px;padding:8px;gap:6px;font-size:10px}.musicbox button{font-size:10px;padding:7px}.help{display:none}.notice{padding:8px}.notice .card{padding:14px;max-height:86dvh;overflow:auto}.notice p{font-size:12px}}@media(max-width:390px){body{padding:6px 6px 14px}.mobile-controls{gap:8px;padding:8px}.joystick{flex-basis:105px;width:105px;height:105px}.mobile-actions{max-width:none}.mobile-controls button{min-height:44px;font-size:10px}.stats{font-size:9px}}.mobile-controls{gap:6px;padding:7px}.mobile-movement{gap:5px}.joystick{display:none}.mobile-actions{flex-basis:38%;min-width:100px}.mobile-controls .direction{width:34px;height:38px;min-height:38px;font-size:16px}.stats{font-size:9px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div><h1>LIGHTNING MAZE</h1><small id="tagline">UN LABYRINTHE. DES ÉCHOS. UNE SORTIE.</small></div><div class="header-actions"><span class="tag" id="betaTag">BÊTA PUBLIQUE</span><button id="languageToggle" type="button">EN</button></div></header>
+<div class="overlay"><canvas id="game" width="960" height="600" tabindex="0" aria-label="Lightning Maze game"></canvas>
+<div class="notice" id="overlay"><div class="card"><h2>LE TEMPS EST TON OUTIL</h2><p>Le temps par boucle varie selon le niveau. La campagne principale compte 20 niveaux. Le chapitre 2 (niveaux 21 à 40) se débloque avec les 20 pièces secrètes ; ces niveaux disposent de 12 secondes par boucle. Un chronomètre ajoute 3 secondes et réapparaît à chaque vie. Les pièces sont placées dans des détours facultatifs. Appuie sur <b>X</b> au clavier ou <b>Y</b> à la manette pour démarrer une nouvelle vie sans attendre : ton ancienne position reste figée jusqu’à la fin du compte à rebours.</p><p><b>Dalles violettes :</b> occupe-les avec ton personnage ou tes échos pour ouvrir les portes. Le fragment doré est nécessaire pour sortir.</p><p><button id="startButton" type="button">JOUER / CONTINUER ▶</button></p><p><span class="key">ENTRÉE</span> ou une touche de déplacement pour commencer · <span class="key">R</span> recommencer le niveau</p></div></div>
+</div>
+<div class="mobile-controls" id="mobileControls" aria-label="Commandes tactiles"><div class="joystick" id="joystick" role="application" aria-label="Joystick tactile : faites glisser dans la direction voulue"><div class="joystick-knob" id="joystickKnob"></div></div><div class="mobile-actions"><button class="action" type="button" data-action="respawn">Nouvelle vie (X)</button><button class="action" type="button" data-action="start">Jouer / continuer</button><button class="action" type="button" data-action="restart">Recommencer</button></div></div>
+<div class="bar"><div class="stats"><span>NIVEAU : <b id="level">01 / 40</b></span><span>FRAGMENT : <b id="shard">À TROUVER</b></span><span>ÉCHOS : <b id="echoes">0</b></span><span>TEMPS : <b id="timer">10.0 s</b></span><span>PIÈCES : <b id="coinCount">0 / 40</b></span><span>MORTS : <b id="deathCount">0</b></span><span>TEMPS TOTAL : <b id="runTime">00:00.0</b></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="restart">Recommencer ↻</button><button id="resetProgress" title="Effacer pièces et déblocages de ce navigateur">Effacer progression</button></div></div>
+<div class="progress" id="progress"></div>
+<div class="musicbox"><b>Audio :</b><button id="musicToggle">Musique : ON</button><button id="sfxToggle" aria-pressed="true">Bruitages : ON</button><span class="muted" id="musicStatus">Place les quatre pistes dans le dossier music/.</span></div>
+<div class="help"><div><b>Déplacement</b><br><span class="key">ZQSD</span> / <span class="key">WASD</span>, flèches ou manette. <span class="key">X</span> / Y : nouvelle vie · <span class="key">R</span> / B : recommencer.</div><div><b>Échos synchronisés</b><br>Chaque parcours enregistré est rejoué au même rythme que la boucle actuelle et peut maintenir une dalle.</div><div><b>Dalles & portes</b><br><span style="color:#ad70ff">■</span> Chaque dalle violette contrôle uniquement sa porte associée ; elle ne bloque jamais la sortie cyan.</div><div><b>Mécaniques</b><br>Tapis roulants, téléporteurs, pièces, chronomètres et zones dangereuses évoluent au fil des niveaux.</div></div>
+</main>
+<script>
+(()=>{'use strict';
+window.addEventListener('error',e=>{const box=document.getElementById('overlay');if(box){box.classList.remove('hidden');box.innerHTML='<div class="card"><h2>'+ (document.documentElement.lang==='fr'?'ERREUR DU JEU':'GAME ERROR') +'</h2><p>'+(document.documentElement.lang==='fr'?'Le jeu a rencontré une erreur JavaScript :':'The game encountered a JavaScript error:')+'</p><p style="color:#ff7186;overflow-wrap:anywhere">'+String(e.message||'Unknown error')+'</p><p>'+(document.documentElement.lang==='fr'?'Appuie sur F12 puis ouvre Console pour plus de détails.':'Press F12 and open Console for details.')+'</p></div>';}});
+const el=id=>document.getElementById(id);
+const canvas=el('game'),ctx=canvas.getContext('2d');if(!ctx){throw new Error('Canvas 2D indisponible dans ce navigateur.');}
+const W=canvas.width,H=canvas.height,TILE=40,OX=80,OY=28,LOOP=16,MAX_ECHOES=5;
+// Musiques du projet : placer les deux fichiers existants dans ./music/
+let musicEnabled=true,sfxEnabled=true,currentTrack=-1,audio=null,sfxContext=null;
+function sound(type){if(!sfxEnabled)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;sfxContext=sfxContext||new AC();if(sfxContext.state==='suspended')sfxContext.resume();const o=sfxContext.createOscillator(),g=sfxContext.createGain(),t=sfxContext.currentTime;const cfg={move:[240,.045,'sine'],fragment:[880,.22,'triangle'],door:[420,.16,'square'],teleport:[560,.18,'sine'],hurt:[105,.28,'sawtooth'],win:[660,.35,'triangle']};const c=cfg[type]||cfg.move;o.type=c[2];o.frequency.setValueAtTime(c[0],t);if(type==='fragment'||type==='win')o.frequency.exponentialRampToValueAtTime(c[0]*1.5,t+c[1]);if(type==='hurt')o.frequency.exponentialRampToValueAtTime(45,t+c[1]);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+c[1]);o.connect(g);g.connect(sfxContext.destination);o.start(t);o.stop(t+c[1]+.02);}catch(e){}}
+el('sfxToggle').addEventListener('click',()=>{sfxEnabled=!sfxEnabled;el('sfxToggle').textContent=tr('Bruitages : ','SFX: ')+(sfxEnabled?'ON':'OFF');el('sfxToggle').setAttribute('aria-pressed',String(sfxEnabled));});
+const tracks=['music/music-1-9.mp3','music/music-10-20.mp3','music/music-21-29.mp3','music/music-30-40.mp3'];
+function startMusic(){if(!musicEnabled)return;const target=levelIndex<9?0:levelIndex<20?1:levelIndex<29?2:3;if(currentTrack===target&&audio&&!audio.paused)return;if(audio){audio.pause();audio.currentTime=0;}audio=new Audio(tracks[target]);audio.loop=true;audio.volume=.35;currentTrack=target;audio.play().then(()=>{el('musicStatus').textContent=(language==='fr'?['Musique active · niveaux 1 à 9.','Musique active · niveaux 10 à 20.','Musique active · niveaux 21 à 29.','Musique active · niveaux 30 à 40.']:['Music playing · levels 1–9.','Music playing · levels 10–20.','Music playing · levels 21–29.','Music playing · levels 30–40.'])[target];}).catch(()=>{el('musicStatus').textContent=tr('Clique une fois sur le jeu pour autoriser la lecture audio.','Click the game once to enable audio playback.');});}
+function switchMusic(){if(musicEnabled)startMusic();}
+el('musicToggle').addEventListener('click',()=>{musicEnabled=!musicEnabled;el('musicToggle').textContent=tr('Musique : ','Music: ')+(musicEnabled?'ON':'OFF');if(musicEnabled){currentTrack=-1;startMusic();}else if(audio){audio.pause();el('musicStatus').textContent=tr('Musique coupée.','Music muted.');}});
+let language='fr';
+const tr=(fr,en)=>language==='fr'?fr:en;
+function applyLanguage(){
+ document.documentElement.lang=language;el('languageToggle').textContent=language==='fr'?'EN':'FR';
+ el('tagline').textContent=tr('UN LABYRINTHE. DES ÉCHOS. UNE SORTIE.','ONE MAZE. MANY ECHOES. FIND THE EXIT.');el('betaTag').textContent=tr('BÊTA PUBLIQUE','PUBLIC BETA');el('game').setAttribute('aria-label',tr('Jeu Lightning Maze','Lightning Maze game'));el('mobileControls').setAttribute('aria-label',tr('Commandes tactiles','Touch controls'));el('joystick').setAttribute('aria-label',tr('Joystick numérique : faites glisser dans la direction voulue','Digital joystick: drag in the desired direction'));
+ const labels=[['level','NIVEAU :','LEVEL:'],['shard','FRAGMENT :','SHARD:'],['echoes','ÉCHOS :','ECHOES:'],['timer','TEMPS :','TIME:'],['coinCount','PIÈCES :','COINS:'],['deathCount','MORTS :','DEATHS:'],['runTime','TEMPS TOTAL :','TOTAL TIME:']];
+ labels.forEach(([id,fr,en])=>{el(id).parentElement.firstChild.textContent=tr(fr,en)+' ';});
+ el('restart').textContent=tr('Recommencer ↻','Restart ↻');el('resetProgress').textContent=tr('Effacer progression','Reset progress');el('resetProgress').title=tr('Effacer pièces et déblocages de ce navigateur','Clear coins and unlocks saved in this browser');
+ el('musicToggle').textContent=tr('Musique : ','Music: ')+(musicEnabled?'ON':'OFF');el('sfxToggle').textContent=tr('Bruitages : ','SFX: ')+(sfxEnabled?'ON':'OFF');document.querySelector('.musicbox b').textContent=tr('Audio :','Audio:');
+ document.querySelector('.help').innerHTML=language==='fr'?'<div><b>Déplacement</b><br><span class="key">ZQSD</span> / <span class="key">WASD</span>, flèches ou manette. <span class="key">X</span> / Y : nouvelle vie · <span class="key">R</span> / B : recommencer.</div><div><b>Échos synchronisés</b><br>Chaque parcours enregistré est rejoué au même rythme que la boucle actuelle et peut maintenir une dalle.</div><div><b>Dalles & portes</b><br><span style="color:#ad70ff">■</span> Chaque dalle violette contrôle uniquement sa porte associée ; elle ne bloque jamais la sortie cyan.</div><div><b>Mécaniques</b><br>Tapis roulants, téléporteurs, pièces, chronomètres et zones dangereuses évoluent au fil des niveaux.</div>':'<div><b>Movement</b><br><span class="key">WASD</span>, arrow keys or gamepad. <span class="key">X</span> / Y: new life · <span class="key">R</span> / B: restart.</div><div><b>Synchronized echoes</b><br>Every recorded route replays in sync with the current loop and can hold a plate.</div><div><b>Plates & doors</b><br><span style="color:#ad70ff">■</span> Each purple plate controls only its matching door; it never blocks the cyan exit.</div><div><b>Mechanics</b><br>Conveyors, teleporters, coins, timers and hazards appear as you progress.</div>';
+ document.querySelector('#mobileControls [data-action="respawn"]').textContent=tr('Nouvelle vie (X)','New life (X)');document.querySelector('#mobileControls [data-action="start"]').textContent=tr('Jouer / continuer','Play / continue');document.querySelector('#mobileControls [data-action="restart"]').textContent=tr('Recommencer','Restart');
+ if(!el('overlay').classList.contains('hidden')){if(noticeMode==='intro'||noticeMode==='retry')resetLevel(true);else if(noticeMode==='act1end')showActOneEnding();else if(noticeMode==='final')showFinalEnding();else if(noticeMode==='leveldone'){const next=levels[levelIndex+1];showOverlay(tr('NIVEAU TERMINÉ','LEVEL COMPLETE'),tr(`Niveau ${levelIndex+1}/40 terminé. ${next.tip}`,`Level ${levelIndex+1}/40 complete. ${next.enTip}`),tr('Niveau suivant →','Next level →'));}else if(noticeMode==='finalmissing')showOverlay(tr('BÊTA TERMINÉE — PIÈCES MANQUANTES','BETA RUN COMPLETE — COINS MISSING'),tr(`Tu as terminé le niveau 40, mais tu n’as que ${coinLedger.size}/40 pièces. Récupère les 40 pièces pour débloquer la véritable fin.`,`You completed level 40, but have only ${coinLedger.size}/40 coins. Collect all 40 coins to unlock the true ending.`),tr('Revenir au niveau 1','Return to level 1'));}
+ updateHUD();draw();
+}
+el('languageToggle').addEventListener('click',()=>{language=language==='fr'?'en':'fr';applyLanguage();});
+
+const levelSpecs=[
+['Premier écho','Apprends à laisser un écho sur la dalle avant de franchir le verrou.',16,'plate', 'First Echo', 'Learn to leave an echo on the plate before crossing the lock.'],
+['Double présence','La dalle se trouve dans une alcôve : va la chercher, puis laisse ton écho dessus.',11,'plate', 'Double Presence', 'The plate is in a nook: reach it, then leave your echo on it.'],
+['Le détour','Le fragment est derrière le verrou. Explore les branches avant de préparer ton passage.',11,'plate', 'The Detour', 'The shard is behind the lock. Explore the branches before planning your route.'],
+['Flux directionnel','Les flèches poussent dans le sens indiqué : elles font partie du parcours obligatoire.',11,'conveyor', 'Moving Floors', 'Arrows push you in the direction shown; they are part of the required route.'],
+['Faux raccourci','Le téléporteur permet de gagner du terrain, mais il ne remplace pas la préparation de la dalle.',11,'teleport', 'False Shortcut', 'The teleporter saves time, but it does not replace setting up the plate.'],
+['Deux lignes temporelles','Utilise plusieurs boucles : une pour la dalle, une pour atteindre le fragment.',11,'plate', 'Two Timelines', 'Use several loops: one to hold the plate, another to reach the shard.'],
+['Salle inversée','Le chemin est plus long et les impasses sont nombreuses.',11,'plate', 'Inverted Room', 'The route is longer and dead ends are everywhere.'],
+['À la dernière seconde','Le temps est plus court. Repère le détour utile avant de lancer ta boucle.',11,'plate', 'Last Second', 'Time is tight. Find the useful detour before starting your loop.'],
+['Anneaux de phase','Les téléporteurs sont placés du même côté du verrou : ils ne permettent pas de le contourner.',11,'teleport', 'The Rings', 'Both teleporters are on the same side of the lock; they cannot bypass it.'],
+['Point de rupture','Un passage étroit te force à utiliser un écho au bon endroit.',12,'plate', 'The Threshold', 'A narrow passage makes you use an echo in exactly the right place.'],
+['Zone écarlate','À partir d’ici, les cases rouges renvoient au départ : évite-les avec précision.',12,'hazard', 'Scarlet Corridor', 'Red tiles send you back to the start. Avoid them carefully.'],
+['Mémoire fracturée','Les dalles rouges occupent une branche dangereuse ; le passage sûr est plus long.',12,'hazard', 'Fractured Memory', 'Red tiles guard a dangerous branch; the safe route is longer.'],
+['Convoyeur piégé','Une flèche peut te pousser vers une impasse. Observe sa direction avant de l’emprunter.',12,'conveyor', 'Trapped Conveyor', 'An arrow can push you into a dead end. Check its direction first.'],
+['Anneau brisé','Les téléporteurs sont utiles pour atteindre le fragment, mais ne contournent pas la porte.',12,'teleport', 'Broken Ring', 'Teleporters help you reach the shard, but cannot bypass the door.'],
+['Double verrou','Prépare l’écho avant de t’engager dans la zone rouge.',12,'hazard', 'Two Locks', 'Set up your echo before entering the red zone.'],
+['Boucle rouge','Le trajet vers le fragment traverse un couloir dangereux : une erreur te renvoie au départ.',12,'hazard', 'Red Loop', 'The route to the shard crosses a dangerous corridor; one mistake sends you back.'],
+['Salle des reflets','Combine un détour, une dalle et un téléporteur sans perdre de vue le verrou.',12,'teleport', 'Hall of Reflections', 'Combine a detour, a plate and a teleporter without losing track of the lock.'],
+['Impulsion finale','Le temps manque : trace un parcours court et utilise l’écho efficacement.',12,'conveyor', 'Final Pulse', 'Time is short: plan a compact route and use your echo well.'],
+['Labyrinthe vivant','La porte bloque toujours le seul passage vers la sortie. Les dangers punissent les détours mal préparés.',12,'hazard', 'Living Maze', 'The door blocks the only route to the exit. Poorly planned detours are dangerous.'],
+['Dernier écho','Dernière épreuve : fragment, dalle, passage obligatoire et zone dangereuse.',12,'hazard', 'Final Echo', 'The final test: shard, plate, mandatory passage and danger zone.'],
+['Nouvelle fréquence','Nouvelle palette, labyrinthe plus dense : anticipe tes boucles et collecte la pièce.',10,'advanced', 'New Frequency', 'A new palette and denser maze: plan your loops and collect the coin.'],
+['Double verrouillage','Deux portes bloquent le parcours. Chaque dalle exige une vie bien placée.',10,'advanced', 'Double Lock', 'Two doors block the route. Each plate needs a carefully placed life.'],
+['Angles morts','Des dangers rouges protègent les détours : reste sur le chemin utile.',10,'hazard', 'Blind Corners', 'Red hazards guard detours. Stay on the useful route.'],
+['Saut de phase','Les téléporteurs sont éloignés et relient deux zones stratégiques.',10,'teleport', 'Phase Jump', 'Far-apart teleporters connect two strategic areas.'],
+['Trois présences','Plusieurs dalles contrôlent plusieurs portes. Construis ton réseau d’échos.',10,'advanced', 'Three Presences', 'Several plates control several doors. Build a network of echoes.'],
+['Contre-courant','Les tapis roulants modifient le rythme et punissent les déplacements impulsifs.',10,'conveyor', 'Countercurrent', 'Conveyor belts change the pace and punish impulsive moves.'],
+['Pièce sous pression','La pièce est placée sur un détour risqué, sans être nécessaire à la sortie.',10,'hazard', 'Coin Under Pressure', 'The coin is on a risky detour, but it is not required to exit.'],
+['Long détour','Le fragment est éloigné et plusieurs portes jalonnent le parcours.',10,'advanced', 'Long Detour', 'The shard is far away and several doors stand in your way.'],
+['Anneaux distants','Les anneaux téléportent entre deux zones éloignées du même secteur.',10,'teleport', 'Distant Rings', 'Teleporters connect two distant areas of the same sector.'],
+['Dernier sas bleu','Une succession de verrous et de branches teste la planification des échos.',10,'advanced', 'Last Blue Airlock', 'A chain of locks and branches tests your echo planning.'],
+['Ligne brisée','Les tapis roulants forcent à recalculer le trajet au milieu d’une boucle.',10,'conveyor', 'Broken Line', 'Conveyor belts force you to recalculate mid-loop.'],
+['Zone de rupture','Les cases rouges sont plus nombreuses, mais restent évitables.',10,'hazard', 'Break Zone', 'There are more red tiles, but they can still be avoided.'],
+['Trois verrous','Trois dalles et trois portes imposent une stratégie sur plusieurs vies.',10,'advanced', 'Three Locks', 'Three plates and three doors demand a multi-life strategy.'],
+['Pièce en orbite','Le collectible facultatif se trouve sur un détour éloigné de la route directe.',10,'teleport', 'Orbital Coin', 'The optional collectible is far from the direct route.'],
+['Temps instable','Le chronomètre est indispensable pour explorer les longues sections.',10,'advanced', 'Unstable Time', 'The timer is essential for exploring the longer sections.'],
+['Passage saturé','Combine dangers, tapis et plusieurs portes sans perdre ton écho de vue.',10,'hazard', 'Saturated Passage', 'Combine hazards, conveyors and several doors without losing track of your echo.'],
+['Réseau de phase','Les téléporteurs sont éloignés et les portes protègent les fragments.',10,'teleport', 'Phase Network', 'Distant teleporters and locked doors guard the shards.'],
+['Salle obscure','Un labyrinthe dense et plusieurs verrous demandent des boucles propres.',10,'advanced', 'Dark Room', 'A dense maze and several locks demand clean loops.'],
+['Dernier vestige','Épreuve ultime : trois verrous, davantage de dangers et un chrono à chaque vie.',10,'hazard', 'Last Remnant', 'The ultimate trial: three locks, more hazards and a timer every life.'],
+['Au-delà du signal','Dernier labyrinthe : synchronise tes vies, récupère le chrono et décide si tu risques le détour pour la pièce.',10,'advanced', 'Beyond the Signal', 'The final maze: synchronize your lives, grab the timer and decide whether to risk the coin detour.']
+];
+// 40 cartes de campagne générées avec des graines distinctes. Chaque carte est un labyrinthe :
+// il n'existe aucun chemin alternatif autour de la porte. La dalle est dans une branche
+// avant le verrou, de sorte qu'un écho doit la maintenir occupée pendant le passage.
+function seededRandom(seed){let a=seed>>>0;return()=>{a=(a*1664525+1013904223)>>>0;return a/4294967296;};}
+function buildLevel(index){
+ const spec=levelSpecs[index],rnd=seededRandom(7319+index*7919),w=20,h=14;
+ const g=Array.from({length:h},()=>Array(w).fill('#'));
+ const dirs=[[0,-2],[2,0],[0,2],[-2,0]];
+ const stack=[[1,1]];g[1][1]='.';
+ while(stack.length){const [x,y]=stack[stack.length-1],opts=dirs.map(([dx,dy])=>[x+dx,y+dy,dx,dy]).filter(([nx,ny])=>nx>0&&nx<w-1&&ny>0&&ny<h-1&&g[ny][nx]==='#');
+  if(!opts.length){stack.pop();continue;}const [nx,ny,dx,dy]=opts[Math.floor(rnd()*opts.length)];g[y+dy/2][x+dx/2]='.';g[ny][nx]='.';stack.push([nx,ny]);}
+ const neighbors=(x,y)=>[[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([a,b])=>a>=0&&a<w&&b>=0&&b<h&&g[b][a]!== '#');
+ const bfs=(sx,sy)=>{const q=[[sx,sy]],prev=new Map([[`${sx},${sy}`,null]]);for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [nx,ny] of neighbors(x,y)){const k=`${nx},${ny}`;if(!prev.has(k)){prev.set(k,`${x},${y}`);q.push([nx,ny]);}}}return {q,prev};};
+ const fromStart=bfs(1,1);let exitPos=[1,1],best=-1;for(const [x,y] of fromStart.q){const d=Math.abs(x-1)+Math.abs(y-1);if(d>best){best=d;exitPos=[x,y];}}
+ // Choisit un point éloigné atteignable par un chemin unique, puis reconstruit le chemin principal.
+ const [ex,ey]=exitPos,prev=fromStart.prev;let path=[],cur=`${ex},${ey}`;while(cur){const [x,y]=cur.split(',').map(Number);path.push([x,y]);cur=prev.get(cur);}path.reverse();
+ if(path.length<12){exitPos=[18,12];}
+ const usable=path.length>12?path:path.concat([]);const doorI=Math.max(6,Math.min(usable.length-5,Math.floor(usable.length*.57)));const shardI=Math.max(doorI+2,Math.min(usable.length-3,Math.floor(usable.length*.78)));
+ const [sx,sy]=usable[0], [dx,dy]=usable[doorI], [gx,gy]=usable[shardI], [endX,endY]=usable[usable.length-1];
+ g[sy][sx]='S';g[dy][dx]='D';g[gy][gx]='G';
+ // Certains niveaux demandent plusieurs fragments, espacés sur le chemin obligatoire.
+ if([2,5,8,11,14,16,18,19].includes(index)){const extra=[Math.max(doorI+1,Math.floor((doorI+shardI)/2)),Math.max(shardI+1,Math.floor((shardI+usable.length-1)/2))];for(const i of extra){if(i<usable.length-1){const [fx,fy]=usable[i];if(g[fy][fx]==='.')g[fy][fx]='G';}}}
+ g[endY][endX]='E';
+ // Dalle dans une alcôve latérale créée explicitement avant la porte. Comme elle est
+ // une branche morte, elle ne peut jamais servir de détour autour du verrou.
+ let plate=null;
+ // La dalle ne doit jamais se trouver au départ : elle est placée au moins 6 pas sur le parcours.
+ for(let i=6;i<doorI-1&&!plate;i++){
+  const [x,y]=usable[i];const sides=[[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([nx,ny])=>nx>0&&nx<w-1&&ny>0&&ny<h-1&&g[ny][nx]==='#');
+  if(sides.length){const [px,py]=sides[Math.floor(rnd()*sides.length)];g[py][px]='P';plate=[px,py];}
+ }
+ if(!plate){
+  // Cas rare d'un couloir très serré : élargit une cellule sur le côté, toujours avant le verrou.
+  const [x,y]=usable[Math.min(3,doorI-2)];const px=x===1?x+1:x-1;if(px>0&&px<w-1&&g[y][px]==='#'){g[y][px]='P';plate=[px,y];}
+ }
+ // Ajoute les mécaniques seulement sur des cases du parcours principal, en veillant à ne pas
+ // créer de téléporteur ou de flèche permettant de passer de l'autre côté du verrou.
+ const kind=spec[3];
+ if(kind==='hazard'){
+  // Les cases rouges sont toujours facultatives : elles occupent des branches latérales,
+  // jamais le chemin obligatoire vers la porte, les fragments ou la sortie.
+  const branchCandidates=[];
+  for(let i=doorI+1;i<usable.length-2;i++){
+   const [x,y]=usable[i];
+   for(const [nx,ny] of [[x+1,y],[x-1,y],[x,y+1],[x,y-1]]){
+    if(nx>0&&nx<w-1&&ny>0&&ny<h-1&&g[ny][nx]==='#')branchCandidates.push([nx,ny]);
+   }
+  }
+  const unique=[...new Map(branchCandidates.map(v=>[v.join(','),v])).values()];
+  for(const [hx,hy] of unique.slice(0,Math.min(3,1+Math.floor(index/6))))g[hy][hx]='!';
+ }else if(kind==='conveyor'){
+  for(let i=doorI+1;i<Math.min(shardI,doorI+4);i++){const [x,y]=usable[i], [nx,ny]=usable[i+1]||usable[i];if(g[y][x]==='.'){g[y][x]=nx>x?'>':nx<x?'<':ny>y?'v':'^';}}
+ }else if(kind==='teleport'){
+  const before=usable.slice(1,Math.max(2,doorI-1)).filter(([x,y])=>g[y][x]==='.');
+  const after=usable.slice(doorI+1,Math.max(doorI+2,shardI-1)).filter(([x,y])=>g[y][x]==='.');
+  // Anneaux éloignés d'au moins quelques cases et situés du même côté du verrou.
+  // Ils servent de raccourci de déplacement sans contourner la porte.
+  const pool=before.length>=6?before:after;
+  if(pool.length>=6){const a=pool[Math.floor(pool.length*.18)],b=pool[Math.floor(pool.length*.82)];
+   const dist=Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);
+   if(dist>=4&&g[a[1]][a[0]]==='.'&&g[b[1]][b[0]]==='.') {g[a[1]][a[0]]='A';g[b[1]][b[0]]='B';}
+  }
+ }
+ // À partir du niveau 22, ajoute progressivement des verrous sur le chemin obligatoire.
+ // Chaque dalle est une alcôve latérale placée avant le verrou qu’elle contrôle.
+ if(index>=20){
+  const extraDoors=index>=32?2:1;
+  for(let n=0;n<extraDoors;n++){
+   const doorAt=Math.floor(usable.length*(n===0?.72:.86));
+   if(doorAt<=doorI+2||doorAt>=usable.length-3)continue;
+   const [tx,ty]=usable[doorAt];
+   if(g[ty][tx]!=='.')continue;
+   let plateCell=null;
+   for(let j=Math.max(doorI+1,doorAt-7);j<doorAt-1&&!plateCell;j++){
+    const [px0,py0]=usable[j];
+    const sides=[[px0+1,py0],[px0-1,py0],[px0,py0+1],[px0,py0-1]].filter(([nx,ny])=>nx>0&&nx<w-1&&ny>0&&ny<h-1&&g[ny][nx]==='#');
+    if(sides.length){const [qx,qy]=sides[Math.floor(rnd()*sides.length)];g[qy][qx]='P';plateCell=[qx,qy];}
+   }
+   if(plateCell)g[ty][tx]='D';
+  }
+ }
+ // Pièce facultative dans une branche en cul-de-sac de deux cases.
+ // On privilégie le côté du départ, loin de la sortie et du fragment : la pièce
+ // récompense un détour mais ne se trouve jamais sur le chemin obligatoire.
+ const coinCandidates=[];
+ const branchRange=usable.slice(2,Math.max(3,Math.min(doorI-1,Math.floor(usable.length*.48))));
+ for(const [rx,ry] of branchRange){
+  if(g[ry][rx]!=='.')continue;
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const bx=rx+dx,by=ry+dy,ex2=rx+dx*2,ey2=ry+dy*2;
+   if(bx<=0||bx>=w-1||by<=0||by>=h-1||ex2<=0||ex2>=w-1||ey2<=0||ey2>=h-1)continue;
+   if(g[by][bx]!=='#'||g[ey2][ex2]!=='#')continue;
+   // L'extrémité doit rester isolée : aucune ouverture latérale supplémentaire.
+   const endpointNeighbors=[[ex2+1,ey2],[ex2-1,ey2],[ex2,ey2+1],[ex2,ey2-1]]
+    .filter(([nx,ny])=>nx>=0&&nx<w&&ny>=0&&ny<h&&g[ny][nx]!== '#');
+   if(endpointNeighbors.length!==0)continue;
+   const distanceToExit=Math.abs(rx-endX)+Math.abs(ry-endY);
+   coinCandidates.push({rx,ry,bx,by,ex2,ey2,score:distanceToExit});
+  }
+ }
+ if(coinCandidates.length){
+  coinCandidates.sort((a,b)=>b.score-a.score);
+  const bestScore=coinCandidates[0].score;
+  const farCandidates=coinCandidates.filter(c=>c.score>=bestScore-2);
+  const c=farCandidates[Math.floor(rnd()*farCandidates.length)];
+  g[c.by][c.bx]='.';g[c.ey2][c.ex2]='C';
+ } else {
+  // Filet de sécurité : ne jamais générer un niveau sans pièce visible.
+  // Cherche une case libre éloignée de la sortie, du fragment et des verrous.
+  const fallback=[];
+  for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
+   if(g[y][x]!=='.')continue;
+   const routeDistance=Math.abs(x-sx)+Math.abs(y-sy);
+   const exitDistance=Math.abs(x-endX)+Math.abs(y-endY);
+   const shardDistance=Math.abs(x-gx)+Math.abs(y-gy);
+   const routeCell=usable.some(([ux,uy])=>ux===x&&uy===y);
+   if(!routeCell)fallback.push({x,y,score:exitDistance+shardDistance+routeDistance*.15});
+  }
+  if(!fallback.length){
+   for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++)if(g[y][x]==='.'&&!(x===endX&&y===endY))fallback.push({x,y,score:Math.abs(x-endX)+Math.abs(y-endY)});
+  }
+  if(fallback.length){fallback.sort((a,b)=>b.score-a.score);const c=fallback[0];g[c.y][c.x]='C';}
+ }
+ // Chronomètre bonus des niveaux Hardcore : placé sur le parcours principal après le verrou,
+ // sans remplacer fragment, pièce, porte ou sortie. Il réapparaît à chaque nouvelle vie.
+ if(index>=20){
+  const timerCandidates=[];
+  for(let i=doorI+2;i<Math.min(shardI+2,usable.length-2);i++){
+   const [tx,ty]=usable[i];if(g[ty][tx]==='.')timerCandidates.push([tx,ty]);
+  }
+  if(!timerCandidates.length){
+   for(let i=doorI+1;i<usable.length-1;i++){const [tx,ty]=usable[i];if(g[ty][tx]==='.')timerCandidates.push([tx,ty]);}
+  }
+  if(timerCandidates.length){const [tx,ty]=timerCandidates[Math.floor(timerCandidates.length*.55)];g[ty][tx]='T';}
+ }
+ const allottedTime=index<20?spec[2]:12;
+ return {name:spec[0],tip:spec[1],enName:spec[4],enTip:spec[5],time:allottedTime,map:g.map(r=>r.join(''))};
+}
+const levels=levelSpecs.map((_,i)=>buildLevel(i));
+let levelIndex=0,level,grid=[],walls=[],plates=[],doors=[],hazards=[],conveyors=[],teleports=[],shards=[],coins=[],timers=[],collectedShards=new Set(),collectedCoins=new Set(),start={x:1,y:1},exit={x:18,y:1},shard={x:10,y:11},player,echoes=[],record=[],pendingPaths=[],frozenLives=[],loopTime=0,running=false,keys=Object.create(null),moveAcc=0,particles=[],gotShard=false,flash=0,last=0,noticeMode='intro',lastMoveDir={x:0,y:0},attemptsUsed=0,firstLoop=true,timerCollected=new Set(),deathCount=0,totalRunSeconds=0,coinStorageKey='echoshift-coins-v1',coinLedger=new Set();
+try{coinLedger=new Set(JSON.parse(localStorage.getItem(coinStorageKey)||'[]'));}catch(e){coinLedger=new Set();}
+let goldSkin=false,auraUnlocked=false,hardcoreMode=false;
+const completionStorageKey='echoshift-total-clear-v1';
+try{auraUnlocked=localStorage.getItem(completionStorageKey)==='true';}catch(e){}
+function firstActCoins(){return [...coinLedger].filter(n=>Number(n)>=0&&Number(n)<20).length;}
+function allFortyCoins(){return [...coinLedger].filter(n=>Number(n)>=0&&Number(n)<40).length>=40;}
+function refreshUnlocks(){goldSkin=firstActCoins()>=20;let cleared=false;try{cleared=localStorage.getItem(completionStorageKey)==='true';}catch(e){}auraUnlocked=auraUnlocked||(allFortyCoins()&&cleared);}
+const px=p=>OX+p.x*TILE+TILE/2,py=p=>OY+p.y*TILE+TILE/2;
+function parseLevel(){
+ level=levels[levelIndex];grid=level.map.map(r=>r.split(''));const h=grid.length,w=Math.max(...grid.map(r=>r.length));grid=grid.map(r=>Array.from({length:w},(_,x)=>r[x]||'#'));
+ plates=[];doors=[];hazards=[];conveyors=[];teleports=[];shards=[];coins=[];timers=[];collectedShards=new Set();timerCollected=new Set();let starts=[],exits=[],candidates=[];
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const ch=grid[y][x];if(ch==='P')plates.push({x,y,on:false});if(ch==='D')doors.push({x,y,plateIndex:-1});if(ch==='!')hazards.push({x,y});if('><^v'.includes(ch))conveyors.push({x,y,dir:ch});if(ch==='A'||ch==='B')teleports.push({x,y,type:ch});if(ch==='S')starts.push({x,y});if(ch==='E')exits.push({x,y});if(ch==='G'){shards.push({x,y});shard={x,y};}if(ch==='C')coins.push({x,y,id:levelIndex});if(ch==='T')timers.push({x,y});if(ch==='.')candidates.push({x,y});}
+ start=starts[0]||{x:1,y:1};exit=exits[0]||{x:w-2,y:h-2};
+ // Garantit une correspondance un-à-un entre chaque dalle P et une porte D.
+ // Les cases ajoutées sont choisies sur des cases libres, sans écraser les objectifs.
+ function takeCandidate(reference){
+  if(!candidates.length)return null;
+  let best=0,bestScore=-Infinity;
+  for(let i=0;i<candidates.length;i++){
+   const c=candidates[i];
+   const distance=Math.abs(c.x-reference.x)+Math.abs(c.y-reference.y);
+   // Évite de coller la porte/dalle au départ ou à la sortie tout en restant sur une case de sol.
+   const fromStart=Math.abs(c.x-start.x)+Math.abs(c.y-start.y);
+   const fromExit=Math.abs(c.x-exit.x)+Math.abs(c.y-exit.y);
+   const score=distance+Math.min(fromStart,fromExit)*0.15;
+   if(score>bestScore){bestScore=score;best=i;}
+  }
+  return candidates.splice(best,1)[0];
+ }
+ while(doors.length<plates.length){
+  const ref=plates[doors.length]||start,c=takeCandidate(ref);if(!c)break;
+  grid[c.y][c.x]='D';doors.push({x:c.x,y:c.y,plateIndex:-1});
+ }
+ while(plates.length<doors.length){
+  const ref=doors[plates.length]||start,c=takeCandidate(ref);if(!c)break;
+  grid[c.y][c.x]='P';plates.push({x:c.x,y:c.y,on:false});
+ }
+ // Une dalle contrôle une porte ordinaire ; la sortie reste libre dans la plupart des niveaux.
+ while(doors.length>plates.length){const d=doors.pop();grid[d.y][d.x]='.';}
+ while(plates.length>doors.length){const p=plates.pop();grid[p.y][p.x]='.';}
+ // Associe les dalles et portes selon leur ordre réel depuis le départ,
+ // pas selon la distance Manhattan : dans un labyrinthe en serpentin, cette
+ // dernière méthode pouvait associer une porte à une dalle située après elle.
+ const distanceFromStart=new Map([[`${start.x},${start.y}`,0]]),queue=[[start.x,start.y]];
+ for(let qi=0;qi<queue.length;qi++){
+  const [qx,qy]=queue[qi],base=distanceFromStart.get(`${qx},${qy}`);
+  for(const [nx,ny] of [[qx+1,qy],[qx-1,qy],[qx,qy+1],[qx,qy-1]]){
+   if(nx<0||ny<0||nx>=w||ny>=h||grid[ny][nx]==='#')continue;
+   const key=`${nx},${ny}`;if(!distanceFromStart.has(key)){distanceFromStart.set(key,base+1);queue.push([nx,ny]);}
+  }
+ }
+ const routeOrder=(a,b)=>(distanceFromStart.get(`${a.x},${a.y}`)??9999)-(distanceFromStart.get(`${b.x},${b.y}`)??9999);
+ plates.sort(routeOrder);doors.sort(routeOrder);
+ doors.forEach((d,i)=>{d.plateIndex=Math.min(i,plates.length-1);});
+ // Chaque niveau garde un verrou sur le chemin obligatoire, jamais sur la case de sortie.
+ document.body.classList.toggle('redzone',levelIndex>=9&&levelIndex<20);document.body.classList.toggle('neonzone',levelIndex>=20&&levelIndex<29);document.body.classList.toggle('voidzone',levelIndex>=29);
+}
+function makePlayer(){return{x:start.x,y:start.y,dir:{x:0,y:0}}}
+function maxAttempts(){return levelIndex<4?10:levelIndex<9?8:levelIndex<14?7:levelIndex<20?6:levelIndex<30?6:5;}
+function resetLevel(show=true){parseLevel();attemptsUsed=0;firstLoop=true;switchMusic();player=makePlayer();echoes=[];pendingPaths=[];frozenLives=[];record=[{x:player.x,y:player.y,t:0}];loopTime=0;running=false;moveAcc=0;gotShard=false;collectedShards=new Set();timerCollected=new Set();keys=Object.create(null);particles=[];flash=0;noticeMode='intro';lastMoveDir={x:0,y:0};if(show){el('overlay').classList.remove('hidden');const card=el('overlay').querySelector('.card');const name=language==='fr'?level.name:level.enName;const tip=language==='fr'?level.tip:level.enTip;card.innerHTML=`<h2>${levelIndex===0?tr('LE TEMPS EST TON OUTIL','TIME IS YOUR TOOL'):tr('NIVEAU ','LEVEL ')+String(levelIndex+1).padStart(2,'0')+' — '+name.toUpperCase()}</h2><p>${levelIndex===0?tr('Lightning Maze est en bêta : explore les niveaux, synchronise tes échos et récupère les pièces secrètes. La campagne compte 40 niveaux. Le chapitre 2 se débloque en récupérant les 20 pièces du chapitre 1. Les chronomètres ajoutent 3 secondes.','Lightning Maze is in beta: explore levels, synchronize your echoes and collect secret coins. There are 40 levels. Chapter 2 unlocks when you collect all 20 Chapter 1 coins. Timers add 3 seconds.'):tip}</p><p>${tr('Temps par boucle :','Time per loop:')} <b>${level.time} ${tr('secondes','seconds')}</b>. ${levelIndex>=20?tr('Récupère le chronomètre (+3 s), qui réapparaît à chaque nouvelle vie.','Collect the timer (+3 s); it respawns with each new life.'):''} ${tr('Appuie sur','Press')} <b>X</b> ${tr('pour lancer une nouvelle vie sans attendre ; ta vie précédente reste figée et peut continuer à activer une dalle.','to start a new life immediately; your previous life stays frozen and can keep a plate activated.')}</p><p><b>${tr('Objectif :','Objective:')}</b> ${tr('fragment doré puis sortie cyan. Les dalles violettes ouvrent uniquement les portes violettes. Récupère tous les fragments pour déverrouiller la sortie.','collect the golden shard, then reach the cyan exit. Purple plates open purple doors only. Collect all shards to unlock the exit.')}</p><p><b>${tr('Limite :','Limit:')}</b> ${maxAttempts()} ${tr('morts maximum pour ce niveau. En cas de dépassement, retour au niveau précédent.','deaths maximum for this level. Exceeding the limit sends you back one level.')}</p><p><button id="startButton" type="button">${tr('JOUER / CONTINUER ▶','PLAY / CONTINUE ▶')}</button></p><p><span class="key">ENTER</span> ${tr('commencer','start')} · <span class="key">X</span> ${tr('nouvelle vie','new life')} · <span class="key">R</span> ${tr('recommencer','restart')}</p>`;wireStartButton();}updatePlates();updateHUD();draw();}
+function startGame(){if(running)return;running=true;noticeMode='play';el('overlay').classList.add('hidden');last=performance.now();canvas.focus({preventScroll:true});if(musicEnabled)startMusic();}
+function wireStartButton(){const b=el('startButton');if(!b)return;b.onclick=e=>{e.preventDefault();e.stopPropagation();if(noticeMode==='intro')startGame();else enterOverlayAction();};}
+function isWall(x,y){if(y<0||y>=grid.length||x<0||x>=grid[0].length)return true;if(grid[y][x]==='#')return true;const exitCell=grid[y][x]==='E';const door=doors.find(d=>d.x===x&&d.y===y);if(door&&!doorOpen(door))return true;if(exitCell&&!gotShard)return true;return false}
+function doorOpen(door){return !!plates[door.plateIndex]?.on}
+function posAt(path,t){let p=path[0]||start;for(let i=1;i<path.length;i++){if(path[i].t<=t+0.0001)p=path[i];else break;}return p}
+function allActors(){return [{x:player.x,y:player.y},...frozenLives.map(l=>({x:l.x,y:l.y})),...echoes.map(e=>posAt(e.path,loopTime))]}
+function updatePlates(){const actors=allActors();plates.forEach(p=>p.on=actors.some(a=>a.x===p.x&&a.y===p.y));}
+function burst(x,y,color,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=20+Math.random()*100;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.3+Math.random()*.6,max:.9,color});}}
+function tryMove(dx,dy){
+ const wasOpen=doors.map(doorOpen);const nx=player.x+dx,ny=player.y+dy;if(isWall(nx,ny))return false;
+ player.x=nx;player.y=ny;player.dir={x:dx,y:dy};lastMoveDir={x:dx,y:dy};record.push({x:nx,y:ny,t:loopTime});
+ let ch=grid[ny][nx];
+ if(ch==='G'&&!collectedShards.has(`${nx},${ny}`)){collectedShards.add(`${nx},${ny}`);gotShard=collectedShards.size>=shards.length;sound('fragment');burst(px(player),py(player),'#ffd166',20);}
+ if(ch==='C'&&!coinLedger.has(levelIndex)){coinLedger.add(levelIndex);try{localStorage.setItem(coinStorageKey,JSON.stringify([...coinLedger]));}catch(e){}refreshUnlocks();sound('fragment');burst(px(player),py(player),'#ffd166',24);updateHUD();}
+ if(ch==='T'&&!timerCollected.has(`${nx},${ny}`)){timerCollected.add(`${nx},${ny}`);loopTime=Math.max(0,loopTime-3);sound('fragment');burst(px(player),py(player),'#5ef5df',18);el('musicStatus').textContent=tr('Chronomètre récupéré : +3 secondes !','Timer collected: +3 seconds!');}
+
+ if(ch==='A'||ch==='B'){const other=teleports.find(t=>t.type!==ch);if(other){player.x=other.x;player.y=other.y;record.push({x:player.x,y:player.y,t:loopTime});sound('teleport');}}
+ if(hazards.some(h=>h.x===player.x&&h.y===player.y)){sound('hurt');burst(px(player),py(player),'#ff476f',14);if(registerDeath()){rollbackLevel();return true;}player.x=start.x;player.y=start.y;record.push({x:player.x,y:player.y,t:loopTime});}
+ if(ch==='>'||ch==='<'||ch==='^'||ch==='v'){const v={'>':[1,0],'<':[-1,0],'^':[0,-1],'v':[0,1]}[ch];if(!isWall(player.x+v[0],player.y+v[1])){player.x+=v[0];player.y+=v[1];record.push({x:player.x,y:player.y,t:loopTime});}}
+ updatePlates();if(doors.some((d,i)=>!wasOpen[i]&&doorOpen(d)))sound('door');sound('move');if(player.x===exit.x&&player.y===exit.y){if(gotShard)completeLevel();else{player.x-=dx;player.y-=dy;record.pop();flash=.25;el('musicStatus').textContent=tr(`Sortie verrouillée : récupère les ${shards.length} fragments dorés (${collectedShards.size}/${shards.length}).`,`Exit locked: collect all ${shards.length} golden shards (${collectedShards.size}/${shards.length}).`);}}return true;
+}
+function activeLoopTime(){return level?.time||LOOP;}
+function rollbackLevel(){running=false;keys=Object.create(null);if(levelIndex===0){resetLevel(true);showOverlay(tr('ESSAIS ÉPUISÉS','ATTEMPT LIMIT REACHED'),tr(`Limite de ${maxAttempts()} morts atteinte. Recommence ce niveau pour retenter ta chance.`,`You reached the ${maxAttempts()}-death limit. Restart this level to try again.`),tr('Réessayer le niveau','Retry level'));noticeMode='retry';}else{levelIndex--;resetLevel(true);showOverlay(tr('ESSAIS ÉPUISÉS','ATTEMPT LIMIT REACHED'),tr(`Tu as dépassé la limite de ${maxAttempts()} morts. Retour au niveau ${levelIndex+1}.`,`You exceeded the ${maxAttempts()}-death limit. Returning to level ${levelIndex+1}.`),tr('Reprendre le niveau précédent','Resume previous level'));}}
+function registerDeath(){deathCount++;attemptsUsed++;updateHUD();return attemptsUsed>=maxAttempts();}
+function respawnOnDemand(){
+ if(!running)return;
+ if(registerDeath()){rollbackLevel();return;}
+ if(record.length>1)pendingPaths.push(record.map(p=>({...p})));
+ frozenLives.push({x:player.x,y:player.y});
+ // La réapparition commence une nouvelle boucle complète, sans retirer les vies figées.
+ // Les chronomètres sont à nouveau disponibles sur cette vie ; l'ancienne position
+ // continue de maintenir les dalles jusqu'à l'expiration du nouveau timer.
+ firstLoop=false;loopTime=0;
+ player=makePlayer();record=[{x:player.x,y:player.y,t:0}];timerCollected=new Set();moveAcc=0;updatePlates();updateHUD();burst(px(start),py(start),goldSkin?'#ffd166':'#5ef5df',12);sound('teleport');
+}
+function loopReset(){if(registerDeath()){rollbackLevel();return;}firstLoop=false;for(const path of [...pendingPaths,...(record.length>1?[record.map(p=>({...p}))]:[])]){echoes.push({path});if(echoes.length>MAX_ECHOES)echoes.shift();}pendingPaths=[];frozenLives=[];player=makePlayer();record=[{x:player.x,y:player.y,t:0}];loopTime=0;timerCollected=new Set();updatePlates();burst(px(start),py(start),'#5ef5df',10);}
+function completeLevel(){sound('win');running=false;keys=Object.create(null);if(levelIndex===19){noticeMode='act1end';showActOneEnding();}else if(levelIndex===levels.length-1){if(allFortyCoins()){noticeMode='final';auraUnlocked=true;try{localStorage.setItem(completionStorageKey,'true');}catch(e){}refreshUnlocks();showFinalEnding();}else{noticeMode='finalmissing';showOverlay(tr('BÊTA TERMINÉE — PIÈCES MANQUANTES','BETA RUN COMPLETE — COINS MISSING'),tr(`Tu as terminé le niveau 40, mais tu n’as que ${coinLedger.size}/40 pièces. Récupère les 40 pièces pour débloquer la véritable fin. Ta collection est sauvegardée.`,`You completed level 40, but have only ${coinLedger.size}/40 coins. Collect all 40 coins to unlock the true ending. Your collection is saved.`),tr('Revenir au niveau 1','Return to level 1'));}}else{noticeMode='leveldone';const next=levels[levelIndex+1];showOverlay(tr('NIVEAU TERMINÉ','LEVEL COMPLETE'),tr(`Niveau ${levelIndex+1}/40 terminé. ${next.tip}`,`Level ${levelIndex+1}/40 complete. ${next.enTip}`),tr('Niveau suivant →','Next level →'));}updateHUD();}
+function showFinalEnding(){noticeMode='final';el('overlay').classList.remove('hidden');const card=el('overlay').querySelector('.card');card.innerHTML=`<h2>${tr('LIGHTNING MAZE — FIN DE LA BÊTA !','LIGHTNING MAZE — BETA COMPLETE!')}</h2><p>${tr('Incroyable ! Tu as terminé les 40 niveaux et récupéré les 40 pièces secrètes.','Amazing! You completed all 40 levels and collected all 40 secret coins.')}</p><p>${tr('Tu as atteint la fin de cette version bêta. La suite du jeu complet arrivera plus tard.','You have reached the end of this beta. The full game will arrive later.')}</p><p>${tr('Récompense débloquée : personnage doré et aura.','Reward unlocked: golden character and aura.')}</p><p><button id="finalRestartButton" type="button">${tr('Revenir au niveau 1','Return to level 1')}</button></p><p class="muted">${tr('Une confirmation sera demandée. Ta collection restera sauvegardée.','You will be asked to confirm. Your collection will remain saved.')}</p>`;el('finalRestartButton').onclick=()=>showFinalRestartConfirmation();launchConfetti();}
+function showFinalRestartConfirmation(){showOverlay(tr('RETOURNER AU NIVEAU 1 ?','RETURN TO LEVEL 1?'),tr('La campagne va recommencer depuis le niveau 1. Les 40 pièces, le personnage doré et les secrets resteront sauvegardés. Confirmer ?','The campaign will restart from level 1. Your 40 coins, golden character and secrets will remain saved. Confirm?'),tr('Oui, recommencer','Yes, restart'));const card=el('overlay').querySelector('.card');el('startButton').onclick=()=>{hardcoreMode=false;levelIndex=0;deathCount=0;totalRunSeconds=0;refreshUnlocks();resetLevel(true);updateHUD();};const no=document.createElement('button');no.textContent=tr('Annuler','Cancel');no.onclick=showFinalEnding;card.querySelector('p').append(' ',no);}
+function launchConfetti(){let layer=document.querySelector('.confetti-layer');if(layer)layer.remove();layer=document.createElement('div');layer.className='confetti-layer';const colors=['#5ef5df','#ff5bbd','#ffd166','#ad70ff','#ffffff'];for(let i=0;i<150;i++){const bit=document.createElement('i');bit.className='confetti-piece';bit.style.left=(Math.random()*100)+'%';bit.style.background=colors[i%colors.length];bit.style.setProperty('--fall',(2.2+Math.random()*3.5)+'s');bit.style.setProperty('--drift',((Math.random()-.5)*240)+'px');bit.style.animationDelay=(Math.random()*1.7)+'s';bit.style.transform=`rotate(${Math.random()*360}deg)`;layer.appendChild(bit);}document.body.appendChild(layer);setTimeout(()=>layer.remove(),6500);}
+
+function showActOneEnding(){const coins=firstActCoins(),unlocked=coins>=20;el('overlay').classList.remove('hidden');const card=el('overlay').querySelector('.card');card.innerHTML=`<h2>${tr('BRAVO — CHAPITRE 1 TERMINÉ','WELL DONE — CHAPTER 1 COMPLETE')}</h2><p>${tr('Tu as terminé les 20 niveaux du chapitre 1. Pièces secrètes :','You completed all 20 Chapter 1 levels. Secret coins:')} <b>${coins}/20</b>.</p><p>${unlocked?tr('Toutes les pièces sont réunies. Le chapitre 2 est débloqué, avec 20 niveaux supplémentaires et une difficulté accrue. Le personnage doré est également débloqué.','All coins collected. Chapter 2 is unlocked, with 20 additional and harder levels. The golden character is also unlocked.'):tr('Le chapitre 2 reste verrouillé. Récupère les 20 pièces secrètes des niveaux 1 à 20 pour continuer.','Chapter 2 remains locked. Collect all 20 secret coins from levels 1–20 to continue.')}</p><p>${unlocked?`<button id="hardcoreButton" type="button">${tr('LANCER LE CHAPITRE 2 ▶','START CHAPTER 2 ▶')}</button>`:''} <button id="replayButton" type="button">${tr('RECOMMENCER LA CAMPAGNE ↻','RESTART CAMPAIGN ↻')}</button></p><p class="muted">${tr('La collection de pièces reste sauvegardée dans ce navigateur.','Your coin collection remains saved in this browser.')}</p>`;const h=el('hardcoreButton');if(h)h.onclick=()=>{hardcoreMode=true;levelIndex=20;refreshUnlocks();resetLevel(true);};el('replayButton').onclick=()=>showRestartConfirmation();}
+
+function showRestartConfirmation(){noticeMode='confirmrestart';showOverlay(tr('RECOMMENCER LA CAMPAGNE ?','RESTART CAMPAIGN?'),tr('Cette action relance le jeu au niveau 1. Tes pièces déjà collectées et tes secrets débloqués resteront sauvegardés. Confirmer ?','This restarts the campaign from level 1. Your collected coins and unlocked secrets will remain saved. Confirm?'),tr('Oui, recommencer','Yes, restart'));const card=el('overlay').querySelector('.card');const yes=el('startButton');yes.onclick=()=>{hardcoreMode=false;levelIndex=0;deathCount=0;totalRunSeconds=0;resetLevel(true);updateHUD();};const no=document.createElement('button');no.textContent=tr('Annuler','Cancel');no.onclick=()=>{noticeMode='act1end';showActOneEnding();};card.querySelector('p').append(' ',no);}
+function showOverlay(title,body,buttonText){el('overlay').classList.remove('hidden');const card=el('overlay').querySelector('.card');card.innerHTML=`<h2>${title}</h2><p>${body}</p><p><button id="startButton" type="button">${buttonText} ▶</button></p><p><span class="key">ENTRÉE</span> pour continuer</p>`;wireStartButton();}
+function enterOverlayAction(){if(noticeMode==='retry'){noticeMode='intro';resetLevel(true);return;}if(noticeMode==='leveldone'){levelIndex=Math.min(levelIndex+1,levels.length-1);resetLevel(true);return;}if(noticeMode==='act1end'){if(firstActCoins()>=20){hardcoreMode=true;levelIndex=20;resetLevel(true);}else{showRestartConfirmation();}return;}if(noticeMode==='confirmrestart'){return;}if(noticeMode==='final'){showFinalRestartConfirmation();return;}if(noticeMode==='finalmissing'){hardcoreMode=false;levelIndex=0;deathCount=0;totalRunSeconds=0;resetLevel(true);updateHUD();return;}startGame();}
+let gamepadStartWasDown=false,gamepadRestartWasDown=false,gamepadRespawnWasDown=false,gamepadMoveX=0,gamepadMoveY=0;
+function readGamepad(){
+ let dx=0,dy=0;const pads=navigator.getGamepads?navigator.getGamepads():[];let pad=null;
+ for(const p of pads){if(p&&p.connected){pad=p;break;}}
+ if(!pad){gamepadStartWasDown=false;gamepadRestartWasDown=false;gamepadRespawnWasDown=false;return {dx:0,dy:0};}
+ const ax=pad.axes?.[0]||0,ay=pad.axes?.[1]||0;
+ if(Math.abs(ax)>.55)dx=ax<0?-1:1;else if(pad.buttons?.[14]?.pressed)dx=-1;else if(pad.buttons?.[15]?.pressed)dx=1;
+ if(Math.abs(ay)>.55)dy=ay<0?-1:1;else if(pad.buttons?.[12]?.pressed)dy=-1;else if(pad.buttons?.[13]?.pressed)dy=1;
+ const startDown=!!(pad.buttons?.[0]?.pressed||pad.buttons?.[9]?.pressed);
+ const restartDown=!!pad.buttons?.[1]?.pressed;
+ const respawnDown=!!pad.buttons?.[3]?.pressed;
+ if(respawnDown&&!gamepadRespawnWasDown)respawnOnDemand();
+ if(startDown&&!gamepadStartWasDown){if(musicEnabled)startMusic();if(!running)enterOverlayAction();}
+ if(restartDown&&!gamepadRestartWasDown)resetLevel(true);
+ gamepadStartWasDown=startDown;gamepadRestartWasDown=restartDown;gamepadRespawnWasDown=respawnDown;
+ return {dx,dy};
+}
+window.addEventListener('gamepadconnected',()=>{el('musicStatus').textContent=tr('Manette détectée : croix/stick pour bouger, A/START pour continuer, Y pour une nouvelle vie, B pour recommencer.','Gamepad detected: D-pad/stick to move, A/START to continue, Y for a new life, B to restart.');});
+function update(dt){
+ if(!running){readGamepad();return;}
+ const loop=activeLoopTime();totalRunSeconds+=dt;loopTime+=dt;if(loopTime>=loop){loopReset();}
+ let dx=0,dy=0;
+ const pad=readGamepad();
+ if(keys.ArrowLeft||keys.a||keys.A||keys.q||keys.Q)dx=-1;else if(keys.ArrowRight||keys.d||keys.D)dx=1;
+ if(keys.ArrowUp||keys.w||keys.W||keys.z||keys.Z||pad.dy<0)dy=-1;else if(keys.ArrowDown||keys.s||keys.S||pad.dy>0)dy=1;
+ if(pad.dx<0&&!dx)dx=-1;else if(pad.dx>0&&!dx)dx=1;
+ moveAcc+=dt;if((dx||dy)&&moveAcc>=.115){moveAcc=0;tryMove(dx,dy);}
+ updatePlates();particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt});particles=particles.filter(p=>p.life>0);flash=Math.max(0,flash-dt);updateHUD();
+}
+function formatRunTime(seconds){const m=Math.floor(seconds/60),ss=(seconds%60).toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+ss;}
+function updateHUD(){el('deathCount').textContent=deathCount;el('runTime').textContent=formatRunTime(totalRunSeconds);el('level').textContent=String(levelIndex+1).padStart(2,'0')+' / '+(hardcoreMode?'40':'20');el('shard').textContent=gotShard?tr('RÉCUPÉRÉ','COLLECTED'):`${collectedShards.size}/${shards.length}`;el('echoes').textContent=echoes.length;el('coinCount').textContent=coinLedger.size+' / 40';el('timer').textContent=Math.max(0,activeLoopTime()-loopTime).toFixed(1)+' s'+(firstLoop?tr(' · première boucle',' · first loop'):'')+tr(' · essais ',' · attempts ')+attemptsUsed+'/'+(level?maxAttempts():10);const visibleLevels=hardcoreMode?40:20;el('progress').innerHTML=levels.slice(0,visibleLevels).map((_,i)=>`<span class="pip ${i<levelIndex?'done':i===levelIndex?'current':''}"></span>`).join('');}
+function draw(){
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#080e1b';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#14283c';ctx.lineWidth=1;
+ for(let x=0;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ for(let y=0;y<grid.length;y++)for(let x=0;x<grid[y].length;x++){const ch=grid[y][x],xx=OX+x*TILE,yy=OY+y*TILE;ctx.fillStyle=(x+y)%2?'#0b1524':'#0c1928';ctx.fillRect(xx+1,yy+1,TILE-2,TILE-2);
+ if(ch==='#'){ctx.fillStyle='#142438';ctx.fillRect(xx+1,yy+1,TILE-2,TILE-2);ctx.strokeStyle='#29445a';ctx.strokeRect(xx+4,yy+4,TILE-8,TILE-8)}
+ else if(ch==='!'){ctx.fillStyle='#541b36';ctx.fillRect(xx+3,yy+3,TILE-6,TILE-6);ctx.strokeStyle='#ff476f';ctx.beginPath();ctx.moveTo(xx+7,yy+7);ctx.lineTo(xx+TILE-7,yy+TILE-7);ctx.moveTo(xx+TILE-7,yy+7);ctx.lineTo(xx+7,yy+TILE-7);ctx.stroke()}
+ else if('><^v'.includes(ch)){ctx.fillStyle='#153e4c';ctx.fillRect(xx+4,yy+4,TILE-8,TILE-8);ctx.fillStyle='#5ef5df';ctx.font='bold 22px monospace';ctx.textAlign='center';ctx.fillText(ch,xx+20,yy+27);ctx.textAlign='left'}
+ else if(ch==='A'||ch==='B'){ctx.strokeStyle=ch==='A'?'#5ef5df':'#ff5bbd';ctx.lineWidth=3;ctx.beginPath();ctx.arc(xx+20,yy+20,11,0,Math.PI*2);ctx.stroke();ctx.fillStyle=ch==='A'?'#5ef5df':'#ff5bbd';ctx.font='12px monospace';ctx.fillText(ch,xx+16,yy+24)}}
+ for(const d of doors){const open=doorOpen(d);ctx.save();ctx.shadowColor=open?'#5ef5df':'#ad70ff';ctx.shadowBlur=12;ctx.fillStyle=open?'#245b5a':'#6b3da3';ctx.fillRect(OX+d.x*TILE+7,OY+d.y*TILE+4,TILE-14,TILE-8);ctx.strokeStyle=open?'#5ef5df':'#d6baff';ctx.strokeRect(OX+d.x*TILE+7,OY+d.y*TILE+4,TILE-14,TILE-8);ctx.restore();}
+ ctx.save();ctx.shadowBlur=gotShard?24:8;ctx.shadowColor=gotShard?'#5ef5df':'#32536a';ctx.fillStyle=gotShard?'#5ef5df':'#284355';ctx.fillRect(px(exit)-12,py(exit)-16,24,32);ctx.fillStyle='#07101b';ctx.fillRect(px(exit)-6,py(exit)-10,12,24);ctx.restore();
+ for(const piece of shards.filter(p=>!collectedShards.has(`${p.x},${p.y}`))){ctx.save();ctx.translate(px(piece),py(piece));ctx.rotate(performance.now()/700);ctx.shadowColor='#ffd166';ctx.shadowBlur=18;ctx.fillStyle='#ffd166';ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(10,0);ctx.lineTo(0,13);ctx.lineTo(-10,0);ctx.closePath();ctx.fill();ctx.restore();}
+ for(const coin of coins.filter(p=>!coinLedger.has(p.id))){ctx.save();ctx.translate(px(coin),py(coin));ctx.rotate(performance.now()/500);ctx.shadowColor='#ffdf4d';ctx.shadowBlur=16;ctx.fillStyle='#ffdf4d';ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8c5a00';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillText('$',0,4);ctx.textAlign='left';ctx.restore();}
+ for(const timer of timers.filter(p=>!timerCollected.has(`${p.x},${p.y}`))){ctx.save();ctx.translate(px(timer),py(timer));ctx.shadowColor='#5ef5df';ctx.shadowBlur=15;ctx.fillStyle='#5ef5df';ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.fill();ctx.fillStyle='#08202a';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillText('+',0,4);ctx.textAlign='left';ctx.restore();}
+ plates.forEach(p=>{ctx.save();ctx.shadowColor=p.on?'#5ef5df':'#ad70ff';ctx.shadowBlur=p.on?18:7;ctx.fillStyle=p.on?'#5ef5df':'#6b3da3';ctx.fillRect(px(p)-12,py(p)-12,24,24);ctx.strokeStyle=p.on?'#c8fff7':'#d6baff';ctx.strokeRect(px(p)-12,py(p)-12,24,24);ctx.fillStyle='#fff';ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillText(p.on?'ON':'P',px(p),py(p)+4);ctx.textAlign='left';ctx.restore();});
+ for(let i=0;i<echoes.length;i++){const pos=posAt(echoes[i].path,loopTime);ctx.save();ctx.globalAlpha=.42;ctx.shadowColor='#ff5bbd';ctx.shadowBlur=15;ctx.fillStyle='#ff5bbd';ctx.beginPath();ctx.arc(px(pos),py(pos),11,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffd0ec';ctx.stroke();ctx.fillStyle='#fff';ctx.font='9px monospace';ctx.textAlign='center';ctx.fillText('E'+(i+1),px(pos),py(pos)-15);ctx.textAlign='left';ctx.restore();}
+ if(record.length>1){ctx.beginPath();ctx.strokeStyle='#5ef5df55';ctx.lineWidth=2;record.forEach((p,i)=>i?ctx.lineTo(px(p),py(p)):ctx.moveTo(px(p),py(p)));ctx.stroke();}
+ for(const life of frozenLives){ctx.save();ctx.globalAlpha=.68;ctx.shadowColor='#ff476f';ctx.shadowBlur=12;ctx.fillStyle='#ff476f';ctx.beginPath();ctx.arc(px(life),py(life),11,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffd7df';ctx.stroke();ctx.restore();}
+ ctx.save();ctx.shadowColor=goldSkin?'#ffd166':'#5ef5df';ctx.shadowBlur=18;ctx.fillStyle=goldSkin?'#ffd166':'#5ef5df';ctx.beginPath();ctx.arc(px(player),py(player),11,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#eaffff';ctx.lineWidth=2;ctx.stroke();if(auraUnlocked){ctx.strokeStyle='#ffdf70';ctx.lineWidth=2;ctx.shadowColor='#ffdf70';ctx.shadowBlur=24;ctx.beginPath();ctx.arc(px(player),py(player),17+Math.sin(performance.now()/180)*2,0,Math.PI*2);ctx.stroke();}ctx.restore();
+ particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,3,3)});ctx.globalAlpha=1;ctx.fillStyle='#91abc2';ctx.font='12px monospace';ctx.fillText(tr('ÉCHOS SYNCHRONISÉS : ','SYNCHRONIZED ECHOES: ')+echoes.length+'/'+MAX_ECHOES,OX,18);ctx.fillStyle=gotShard?'#5ef5df':'#ffd166';ctx.fillText(gotShard?tr('FRAGMENT ACQUIS','SHARD COLLECTED'):tr('TROUVE LE FRAGMENT','FIND THE SHARD'),OX+610,18);ctx.fillStyle='#ad70ff';ctx.fillText((language==='fr'?level.name:level.enName).toUpperCase(),OX,H-10);
+ if(flash>0){ctx.fillStyle='rgba(255,209,102,'+(flash*.6)+')';ctx.fillRect(0,0,W,H);}
+}
+function frame(now){const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;update(dt);draw();requestAnimationFrame(frame);}
+const movementKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','W','a','A','s','S','d','D','z','Z','q','Q']);
+window.addEventListener('keydown',e=>{
+ const k=e.key;
+ if(movementKeys.has(k)||k===' '||k==='Enter')e.preventDefault();
+ if(k==='r'||k==='R'){resetLevel(true);return;}
+ if(k==='x'||k==='X'){respawnOnDemand();return;}
+ if(k==='Enter'||k===' '){if(musicEnabled)startMusic();if(!running){enterOverlayAction();}return;}
+ if(movementKeys.has(k)){
+   if(musicEnabled)startMusic();if(!running){if(noticeMode==='leveldone'||noticeMode==='final'){enterOverlayAction();return;}startGame();}
+   keys[k]=true;
+ }
+},{passive:false});
+window.addEventListener('keyup',e=>{keys[e.key]=false;});
+window.addEventListener('blur',()=>{keys=Object.create(null);});
+const joystick=el('joystick'),joystickKnob=el('joystickKnob');
+let joystickPointer=null;
+function releaseJoystick(){joystickPointer=null;keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=false;joystickKnob.style.left='50%';joystickKnob.style.top='50%';}
+function moveJoystick(e){
+ if(joystickPointer!==e.pointerId)return;
+ e.preventDefault();const r=joystick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ let dx=e.clientX-cx,dy=e.clientY-cy;const max=Math.min(r.width,r.height)*.32,len=Math.hypot(dx,dy);if(len>max){dx=dx/len*max;dy=dy/len*max;}
+ joystickKnob.style.left=`calc(50% + ${dx}px)`;joystickKnob.style.top=`calc(50% + ${dy}px)`;
+ keys.ArrowLeft=dx < -13 && Math.abs(dx)>=Math.abs(dy);keys.ArrowRight=dx > 13 && Math.abs(dx)>=Math.abs(dy);
+ keys.ArrowUp=dy < -13 && Math.abs(dy)>Math.abs(dx);keys.ArrowDown=dy > 13 && Math.abs(dy)>Math.abs(dx);
+ if(musicEnabled)startMusic();if(!running)startGame();
+}
+joystick.addEventListener('pointerdown',e=>{e.preventDefault();joystickPointer=e.pointerId;try{joystick.setPointerCapture(e.pointerId);}catch(_){}moveJoystick(e);});
+joystick.addEventListener('pointermove',moveJoystick);
+joystick.addEventListener('pointerup',e=>{if(joystickPointer===e.pointerId){e.preventDefault();releaseJoystick();}});
+joystick.addEventListener('pointercancel',releaseJoystick);joystick.addEventListener('lostpointercapture',releaseJoystick);
+if(!('PointerEvent' in window)){joystick.addEventListener('touchstart',e=>{if(!e.changedTouches.length)return;e.preventDefault();const t=e.changedTouches[0];joystickPointer=1;moveJoystick({pointerId:1,clientX:t.clientX,clientY:t.clientY,preventDefault:()=>{}});},{passive:false});joystick.addEventListener('touchmove',e=>{if(!joystickPointer||!e.changedTouches.length)return;e.preventDefault();const t=e.changedTouches[0];moveJoystick({pointerId:1,clientX:t.clientX,clientY:t.clientY,preventDefault:()=>{}});},{passive:false});['touchend','touchcancel'].forEach(n=>joystick.addEventListener(n,releaseJoystick,{passive:false}));}
+// Croix directionnelle : commandes tactiles maintenues, indépendantes du joystick.
+const directionButtons=[...document.querySelectorAll('#mobileControls [data-dir]')];
+function clearDirections(){directionButtons.forEach(btn=>{keys[btn.dataset.dir]=false;btn.classList.remove('active');});}
+directionButtons.forEach(btn=>{
+ const dir=btn.dataset.dir;
+ const press=e=>{e.preventDefault();keys[dir]=true;btn.classList.add('active');if(musicEnabled)startMusic();if(!running)startGame();try{btn.setPointerCapture(e.pointerId);}catch(_){};};
+ const release=e=>{if(e)e.preventDefault();keys[dir]=false;btn.classList.remove('active');};
+ btn.addEventListener('pointerdown',press,{passive:false});btn.addEventListener('pointerup',release,{passive:false});btn.addEventListener('pointercancel',release,{passive:false});btn.addEventListener('lostpointercapture',release);
+});
+window.addEventListener('pointerup',()=>{directionButtons.forEach(btn=>{keys[btn.dataset.dir]=false;btn.classList.remove('active');});});
+window.addEventListener('pagehide',()=>{releaseJoystick();clearDirections();});
+function runMobileAction(btn){
+ const action=btn.dataset.action;
+ if(action==='respawn'){if(!running)startGame();respawnOnDemand();}
+ else if(action==='restart'){resetLevel(true);}
+ else {if(musicEnabled)startMusic();if(!running){if(noticeMode==='intro')startGame();else enterOverlayAction();}}
+}
+document.querySelectorAll('#mobileControls [data-action]').forEach(btn=>{
+ let lastTouch=0;
+ btn.addEventListener('touchend',e=>{e.preventDefault();lastTouch=Date.now();runMobileAction(btn);},{passive:false});
+ btn.addEventListener('click',e=>{e.preventDefault();if(Date.now()-lastTouch<700)return;runMobileAction(btn);});
+});
+el('restart').addEventListener('click',()=>resetLevel(true));
+el('resetProgress').addEventListener('click',()=>{if(!confirm(tr('Effacer toute la progression Lightning Maze dans ce navigateur ? Les 40 pièces, le skin doré et les secrets seront réinitialisés. Cette action est irréversible.','Clear all Lightning Maze progress in this browser? All 40 coins, the golden skin and secrets will be reset. This cannot be undone.')))return;try{localStorage.removeItem(coinStorageKey);localStorage.removeItem(completionStorageKey);localStorage.removeItem('echoshift-progress-v1');}catch(e){}coinLedger=new Set();goldSkin=false;auraUnlocked=false;hardcoreMode=false;levelIndex=0;resetLevel(true);el('musicStatus').textContent=tr('Progression effacée : nouvelle partie depuis le niveau 1.','Progress reset: new game from level 1.');});
+el('overlay').addEventListener('click',e=>{if(!running&&e.target===el('overlay'))enterOverlayAction();});
+canvas.addEventListener('click',()=>{canvas.focus({preventScroll:true});if(musicEnabled)startMusic();if(!running)enterOverlayAction();});
+refreshUnlocks();el('musicToggle').textContent=tr('Musique : ','Music: ')+'ON';el('musicStatus').textContent=tr('Musique originale activée · fichiers du dossier music/. Clique ou appuie sur une touche pour lancer la lecture.','Original music enabled · add tracks to the music/ folder. Click or press a key to start.');resetLevel(true);wireStartButton();applyLanguage();last=performance.now();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
