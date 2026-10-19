@@ -30,11 +30,11 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/10;border:1px solid 
  canvas{width:100%;height:auto;max-height:calc(100dvh - 10px);aspect-ratio:16/10;object-fit:contain;border-radius:8px}
  .notice{padding:5px}.notice .card{padding:10px;max-height:calc(100dvh - 20px);overflow:auto}.notice h2{font-size:15px}.notice p{font-size:10px;line-height:1.35}
  .mobile-controls{grid-column:2;grid-row:1;position:relative;display:flex;width:100%;height:100%;max-width:none;align-items:flex-end;justify-content:flex-end;margin:0;padding:0;background:transparent;border:0;gap:0}
- .joystick{position:absolute;right:0;bottom:8px;flex:0 0 min(19vw,42dvh);width:min(19vw,42dvh);height:min(19vw,42dvh);max-width:100%;max-height:100%;}
+ .joystick{position:absolute;right:0;bottom:8px;flex:0 0 min(22vw,46dvh);width:min(22vw,46dvh);height:min(22vw,46dvh);max-width:100%;max-height:100%;}
  .joystick-knob{width:23%;height:23%}
- .mobile-actions{display:flex!important;position:absolute;right:0;bottom:calc(min(19vw,42dvh) + 18px);width:auto;max-width:none;min-width:0;flex:initial;gap:0}
+ .mobile-actions{display:flex!important;position:absolute;right:0;bottom:calc(min(22vw,46dvh) + 18px);width:auto;max-width:none;min-width:0;flex:initial;gap:0}
  .mobile-actions [data-action="start"],.mobile-actions [data-action="restart"]{display:none!important}
- .mobile-actions [data-action="respawn"]{display:block;min-height:34px;padding:6px 9px;font-size:10px;white-space:nowrap;border-radius:8px;background:#10283b;box-shadow:0 2px 10px #0008}
+ .mobile-actions [data-action="respawn"]{display:block;min-height:40px;padding:8px 11px;font-size:11px;white-space:nowrap;border-radius:8px;background:#10283b;box-shadow:0 2px 10px #0008}
 }
 </style>
 </head>
@@ -69,7 +69,7 @@ let language='fr';
 const tr=(fr,en)=>language==='fr'?fr:en;
 function applyLanguage(){
  document.documentElement.lang=language;el('languageToggle').textContent=language==='fr'?'EN':'FR';
- el('tagline').textContent=tr('UN LABYRINTHE. DES ÉCHOS. UNE SORTIE.','ONE MAZE. MANY ECHOES. FIND THE EXIT.');el('betaTag').textContent=tr('BÊTA PUBLIQUE','PUBLIC BETA');el('orientationHint').textContent=tr('Pour une meilleure expérience, joue en mode paysage ↻','For the best experience, play in landscape mode ↻');el('game').setAttribute('aria-label',tr('Jeu Lightning Maze','Lightning Maze game'));el('mobileControls').setAttribute('aria-label',tr('Commandes tactiles','Touch controls'));el('joystick').setAttribute('aria-label',tr('Joystick numérique : faites glisser dans la direction voulue','Digital joystick: drag in the desired direction'));
+ el('tagline').textContent=tr('UN LABYRINTHE. DES ÉCHOS. UNE SORTIE.','ONE MAZE. MANY ECHOES. FIND THE EXIT.');el('betaTag').textContent=tr('BÊTA PUBLIQUE','PUBLIC BETA');el('orientationHint').textContent=tr('Pour une meilleure expérience, joue en mode paysage ↻','For the best experience, play in landscape mode ↻');el('game').setAttribute('aria-label',tr('Jeu Lightning Maze','Lightning Maze game'));el('mobileControls').setAttribute('aria-label',tr('Commandes tactiles','Touch controls'));el('joystick').setAttribute('aria-label',tr('Joystick analogique : inclinez vers une direction ou une diagonale','Analog joystick: tilt toward a direction or diagonal')); 
  const labels=[['level','NIVEAU :','LEVEL:'],['shard','FRAGMENT :','SHARD:'],['echoes','ÉCHOS :','ECHOES:'],['timer','TEMPS :','TIME:'],['coinCount','PIÈCES :','COINS:'],['deathCount','MORTS :','DEATHS:'],['runTime','TEMPS TOTAL :','TOTAL TIME:']];
  labels.forEach(([id,fr,en])=>{el(id).parentElement.firstChild.textContent=tr(fr,en)+' ';});
  el('restart').textContent=tr('Recommencer ↻','Restart ↻');el('resetProgress').textContent=tr('Effacer progression','Reset progress');el('resetProgress').title=tr('Effacer pièces et déblocages de ce navigateur','Clear coins and unlocks saved in this browser');
@@ -444,9 +444,18 @@ function moveJoystick(e){
  e.preventDefault();const r=joystick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
  let dx=e.clientX-cx,dy=e.clientY-cy;const max=Math.min(r.width,r.height)*.32,len=Math.hypot(dx,dy);if(len>max){dx=dx/len*max;dy=dy/len*max;}
  joystickKnob.style.left=`calc(50% + ${dx}px)`;joystickKnob.style.top=`calc(50% + ${dy}px)`;
- const threshold=Math.max(3,Math.min(r.width,r.height)*.075);
- keys.ArrowLeft=dx < -threshold;keys.ArrowRight=dx > threshold;
- keys.ArrowUp=dy < -threshold;keys.ArrowDown=dy > threshold;
+ // Zone morte très faible, puis priorité à l'axe dominant : un geste
+ // majoritairement horizontal (ex. 80 % droite / 20 % haut) reste horizontal.
+ // Les diagonales sont activées quand les deux axes ont une intensité proche.
+ const threshold=Math.max(2,Math.min(r.width,r.height)*.035);
+ const ax=Math.abs(dx),ay=Math.abs(dy),dominance=0.38;
+ let useX=ax>threshold,useY=ay>threshold;
+ if(useX&&useY){
+   if(ax>ay && ay<ax*dominance)useY=false;
+   else if(ay>ax && ax<ay*dominance)useX=false;
+ }
+ keys.ArrowLeft=useX&&dx<0;keys.ArrowRight=useX&&dx>0;
+ keys.ArrowUp=useY&&dy<0;keys.ArrowDown=useY&&dy>0;
  if(musicEnabled)startMusic();if(!running)startGame();
 }
 joystick.addEventListener('pointerdown',e=>{e.preventDefault();joystickPointer=e.pointerId;try{joystick.setPointerCapture(e.pointerId);}catch(_){}moveJoystick(e);});
