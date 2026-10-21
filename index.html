@@ -72,6 +72,40 @@ canvas{display:block;width:100%;-webkit-user-select:none;user-select:none;height
  .mobile-actions button{min-height:30px;height:30px;width:min(78%,140px);padding:3px;font-size:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px) + 6px) + 3 * min(13vw,54px,calc((100dvh - 105px - env(safe-area-inset-bottom,0px))/3.4)) + 7px)}
  .direction-pad{--pad-size:min(13vw,54px,calc((100dvh - 105px - env(safe-area-inset-bottom,0px))/3.4));bottom:max(8px,calc(env(safe-area-inset-bottom,0px) + 6px));grid-template-columns:repeat(3,var(--pad-size));grid-template-rows:repeat(3,var(--pad-size));gap:3px}
 }
+/* V19: conserver la mise en page mobile portrait précédente et corriger uniquement les doublons; paysage en zones distinctes. */
+@media (max-width:700px) and (orientation:portrait){
+ .bar,.progress{display:none!important}
+ .mobile-controls{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);align-items:center;justify-content:stretch;gap:10px;width:100%;max-width:none;margin:10px 0;padding:12px;background:#091321;border:1px solid #233e54;border-radius:14px;touch-action:none}
+ .direction-pad{position:static;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,clamp(44px,15vw,64px));gap:5px;width:100%;max-width:220px;justify-self:center}
+ .mobile-actions{position:static;display:grid!important;grid-template-columns:minmax(0,1fr);grid-auto-rows:minmax(42px,auto);align-content:center;gap:7px;width:100%;min-width:0;max-width:none}
+ .mobile-status{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;width:100%;margin:0 0 4px}
+ .mobile-actions button{position:static;display:block!important;width:100%;min-width:0;min-height:42px;height:auto;padding:9px 5px;font-size:clamp(10px,2.7vw,13px);white-space:normal}
+ .mobile-actions [data-action="start"],.mobile-actions [data-action="restart"]{display:none!important}
+}
+@media (pointer:coarse) and (orientation:landscape), (max-width:700px) and (orientation:landscape){
+ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}
+ body{display:block;padding:0;min-height:0}
+ .wrap{width:100vw;max-width:none;height:100dvh;margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,34vw);grid-template-rows:minmax(0,1fr);align-items:center;gap:8px;padding:4px max(8px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+ header,.orientation-hint,.bar,.progress,.musicbox,.help{display:none!important}
+ .overlay{grid-column:1;grid-row:1;width:100%;min-width:0;display:flex;align-items:center;justify-content:center}
+ canvas{width:100%;height:auto;max-height:calc(100dvh - 12px - env(safe-area-inset-bottom,0px));aspect-ratio:16/10;object-fit:contain;border-radius:8px}
+ .mobile-controls{grid-column:2;grid-row:1;position:relative;display:block!important;width:100%;height:100%;min-height:0;max-width:none;margin:0;padding:0;background:transparent;border:0;overflow:hidden}
+ .mobile-status{position:absolute;top:4px;left:0;right:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;width:100%;margin:0}
+ .mobile-status span{min-width:0;padding:4px 5px;font-size:clamp(9px,1.8vh,11px);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mobile-actions{position:absolute;top:78px;right:0;width:44%;height:calc(100% - 86px);display:flex!important;flex-direction:column;justify-content:flex-start;gap:7px;max-width:none;min-width:0}
+ .mobile-actions button{position:static!important;display:block!important;width:100%!important;min-width:0;height:clamp(30px,8vh,38px)!important;min-height:0!important;flex:0 0 auto;padding:3px 4px;font-size:clamp(9px,1.8vh,12px);line-height:1.1;white-space:normal;border-radius:8px}
+ .mobile-actions [data-action="start"],.mobile-actions [data-action="restart"]{display:none!important}
+ .direction-pad{--pad-size:min(16vw,calc((100dvh - 30px)/3.4),72px);position:absolute;left:0;bottom:max(4px,env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:4px;width:52%;height:min(64%,calc(100% - 112px));max-height:240px;aspect-ratio:1;}
+ .direction-pad button{width:100%;height:100%;min-width:0;min-height:0;padding:0;font-size:clamp(22px,5vh,34px);border-radius:10px;pointer-events:auto;touch-action:none}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:380px), (max-width:700px) and (orientation:landscape) and (max-height:380px){
+ .wrap{grid-template-columns:minmax(0,1fr) minmax(220px,34vw);gap:5px;padding-top:2px}
+ .mobile-status span{padding:3px;font-size:8px}
+ .mobile-actions{top:68px;height:calc(100% - 72px);gap:5px;width:43%}
+ .mobile-actions button{height:clamp(26px,7.5vh,30px)!important;font-size:9px;padding:2px}
+ .direction-pad{width:54%;height:min(66%,calc(100% - 96px));bottom:3px;gap:3px}
+ .direction-pad button{font-size:clamp(20px,5vh,28px)}
+}
 </style>
 </head>
 <body>
@@ -427,7 +461,10 @@ let tutorialReturnRunning=false,selectorReturnRunning=false;
 function showTutorial(){
  tutorialReturnRunning=running;running=false;noticeMode='tutorial';el('overlay').classList.remove('hidden');
  const card=el('overlay').querySelector('.card');
- card.innerHTML=`<h2>${tr('TUTORIEL VIDÉO','VIDEO TUTORIAL')}</h2><p>${tr('Découvre les commandes et les mécaniques de Lightning Maze dans ce tutoriel. La vidéo n’est pas encore disponible.','Learn the controls and core mechanics of Lightning Maze in this tutorial. The video is not available yet.')}</p><video id="tutorialVideo" controls playsinline preload="metadata" style="display:block;width:100%;max-height:52vh;background:#000;border-radius:8px"><source src="tutorial/tutorial.mp4" type="video/mp4">${tr('Ton navigateur ne prend pas en charge la vidéo HTML5.','Your browser does not support HTML5 video.')}</video><p><button id="closeTutorialButton" type="button">${tr('Fermer','Close')}</button></p>`;
+ const mobile=isMobilePlay();
+ const videoPath=mobile?'tutorial/tutorial-mobile.mp4':'tutorial/tutorial-pc.mp4';
+ const intro=mobile?tr('Apprends à te déplacer avec la croix directionnelle, à gérer tes nouvelles vies et à résoudre les labyrinthes grâce aux échos.','Learn to move with the directional pad, manage new lives, and solve mazes using echoes.') :tr('Découvre les commandes clavier et manette, les échos synchronisés et les mécaniques qui te permettront de trouver la sortie.','Learn the keyboard and gamepad controls, synchronized echoes, and the mechanics that help you find the exit.');
+ card.innerHTML=`<h2>${tr('TUTORIEL VIDÉO','VIDEO TUTORIAL')}</h2><p>${intro}</p><video id="tutorialVideo" controls playsinline preload="metadata" style="display:block;width:100%;max-height:52vh;background:#000;border-radius:8px"><source src="${videoPath}" type="video/mp4">${tr('Ton navigateur ne prend pas en charge la vidéo HTML5.','Your browser does not support HTML5 video.')}</video><p class="muted">${tr('La vidéo sera disponible ici dès qu’elle aura été ajoutée.','The video will appear here once it has been added.')}</p><p><button id="closeTutorialButton" type="button">${tr('Fermer','Close')}</button></p>`;
  el('closeTutorialButton').onclick=()=>{const v=el('tutorialVideo');if(v)v.pause();if(tutorialReturnRunning){running=true;noticeMode='play';el('overlay').classList.add('hidden');}else resetLevel(true);};
 }
 function showLevelSelector(){
